@@ -1,6 +1,6 @@
 {
-  "name": "Florin Fresco · Calculadora de horas",
-  "short_name": "Horas",
+  "name": "Calculadora de Horas - FlorinFresco SL",
+  "short_name": "Calculadora de Horas - FlorinFresco SL",
   "description": "Calculadora de horas de conducción y descanso para conductores de Florin Fresco",
   "start_url": "./",
   "scope": "./",
