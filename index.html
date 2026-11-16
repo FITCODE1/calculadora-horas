@@ -3,7 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Calculadora de horas</title>
+<title>Florin Fresco · Calculadora de horas</title>
+<meta name="description" content="Calcula a qué hora terminas y cuánto tiempo ha pasado. Conducción y descanso del tacógrafo.">
+<meta property="og:title" content="Florin Fresco · Calculadora de horas">
+<meta property="og:description" content="Calcula a qué hora terminas y cuánto tiempo ha pasado. Conducción y descanso del tacógrafo.">
+<meta property="og:image" content="https://fitcode1.github.io/calculadora-horas/icon-512.png">
+<meta property="og:url" content="https://fitcode1.github.io/calculadora-horas/">
+<meta property="og:type" content="website">
 <meta name="theme-color" content="#e8a200">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -35,6 +41,7 @@ h1 { font-size: 1.7rem; } h2 { font-size: 1.2rem; }
 .langs button { font: 700 .95rem var(--font); border: 2px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
 .langs button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
 .sub { color: var(--muted); margin: 0; }
+.brand { font-size: .8rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--drive); }
 .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 5px; }
 .tabs button { font: 700 1rem var(--font); border: 0; border-radius: 8px; padding: 12px 8px; background: transparent; color: var(--muted); cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
@@ -46,7 +53,7 @@ select, input { font: 700 1.5rem var(--font); color: var(--ink); background: var
 input[type="number"] { width: 4.2em; text-align: center; }
 select:focus-visible, input:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .colon { font: 700 1.6rem var(--font); padding-bottom: 10px; }
-.now { font: 700 1rem var(--font); border: 2px solid var(--drive); color: var(--drive); background: transparent; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.now { font: 700 1.05rem var(--font); border: 2px solid var(--drive); color: var(--card); background: var(--drive); border-radius: 10px; padding: 12px 14px; cursor: pointer; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { font: 700 1rem var(--font); border: 2px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
 .chip small { color: var(--muted); font-weight: 500; }
@@ -68,7 +75,7 @@ footer { font-size: .8rem; color: var(--muted); text-align: center; }
 <body>
 <div class="wrap">
   <div class="top">
-    <h1 id="t-title"></h1>
+    <div><div class="brand">Florin Fresco</div><h1 id="t-title"></h1></div>
     <div class="langs" role="group" aria-label="Idioma">
       <button data-lang="es">ES</button><button data-lang="ro">RO</button><button data-lang="ar">ع</button>
     </div>
@@ -102,12 +109,14 @@ footer { font-size: .8rem; color: var(--muted); text-align: center; }
       <label for="f-h"><span data-t="hour"></span><input id="f-h" type="number" min="0" max="23" value="21" inputmode="numeric"></label>
       <span class="colon">:</span>
       <label for="f-m"><span data-t="min"></span><input id="f-m" type="number" min="0" max="59" value="10" inputmode="numeric"></label>
+      <button class="now" id="btn-now-f" data-t="now"></button>
     </div>
     <div class="row">
       <label for="t-day"><span data-t="to"></span><select id="t-day"></select></label>
       <label for="t-h"><span data-t="hour"></span><input id="t-h" type="number" min="0" max="23" value="8" inputmode="numeric"></label>
       <span class="colon">:</span>
       <label for="t-m"><span data-t="min"></span><input id="t-m" type="number" min="0" max="59" value="40" inputmode="numeric"></label>
+      <button class="now" id="btn-now-t" data-t="now"></button>
     </div>
   </section>
 
@@ -141,9 +150,9 @@ footer { font-size: .8rem; color: var(--muted); text-align: center; }
 const I18N = {
   es: {
     title: "Calculadora de horas",
-    sub: "Calcula a qué hora y qué día terminas, o cuánto tiempo ha pasado. Formato 24 horas, hora de España.",
+    sub: "Calcula a qué hora y qué día terminas, o cuánto tiempo ha pasado. Formato 24 horas, con la hora de tu teléfono.",
     tabAdd: "¿A qué hora termino?", tabDiff: "¿Cuánto tiempo ha pasado?",
-    day: "Día", hour: "Hora", min: "Min", now: "Ahora", addH: "Sumar horas", from: "Desde", to: "Hasta",
+    day: "Día", hour: "Hora", min: "Min", now: "🕒 Hora actual", addH: "Sumar horas", from: "Desde", to: "Hasta",
     days: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
     same: "el mismo día", tomorrow: "mañana", after: "pasado mañana", inDays: "dentro de {n} días",
     presets: ["conducción", "descanso reducido", "descanso", "jornada", "jornada", "un día", "descanso semanal"],
@@ -173,9 +182,9 @@ const I18N = {
   },
   ro: {
     title: "Calculator ore șofer",
-    sub: "Afli la ce oră și în ce zi termini, sau cât timp a trecut. Ora pe 24 de ore, ora Spaniei.",
+    sub: "Afli la ce oră și în ce zi termini, sau cât timp a trecut. Ora pe 24 de ore, ora din telefonul tău.",
     tabAdd: "La ce oră termin?", tabDiff: "Cât timp a trecut?",
-    day: "Ziua", hour: "Ora", min: "Min", now: "Acum", addH: "Adun ore", from: "De la", to: "Până la",
+    day: "Ziua", hour: "Ora", min: "Min", now: "🕒 Ora de acum", addH: "Adun ore", from: "De la", to: "Până la",
     days: ["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"],
     same: "aceeași zi", tomorrow: "mâine", after: "poimâine", inDays: "peste {n} zile",
     presets: ["condus", "odihnă redusă", "odihnă", "program", "program", "o zi", "odihnă săpt."],
@@ -205,9 +214,9 @@ const I18N = {
   },
   ar: {
     title: "حاسبة ساعات السائق",
-    sub: "احسب في أي ساعة وأي يوم تنتهي، أو كم من الوقت مضى. نظام 24 ساعة، بتوقيت إسبانيا.",
+    sub: "احسب في أي ساعة وأي يوم تنتهي، أو كم من الوقت مضى. نظام 24 ساعة، حسب ساعة هاتفك.",
     tabAdd: "متى أنتهي؟", tabDiff: "كم مضى من الوقت؟",
-    day: "اليوم", hour: "الساعة", min: "الدقائق", now: "الآن", addH: "أضف ساعات", from: "من", to: "إلى",
+    day: "اليوم", hour: "الساعة", min: "الدقائق", now: "🕒 الوقت الحالي", addH: "أضف ساعات", from: "من", to: "إلى",
     days: ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"],
     same: "نفس اليوم", tomorrow: "غدًا", after: "بعد غد", inDays: "بعد {n} أيام",
     presets: ["قيادة", "راحة مخفضة", "راحة", "دوام", "دوام", "يوم", "راحة أسبوعية"],
@@ -250,13 +259,13 @@ const t = (key, vars = {}) => T()[key].replace(/\{(\w+)\}/g, (_, k) => vars[k] ?
 const dayName = d => T().days[((d % 7) + 7) % 7];
 const relDay = off => off === 0 ? T().same : off === 1 ? T().tomorrow : off === 2 ? T().after : t("inDays", { n: off });
 
-function madridNow() {
-  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
-  const get = type => parts.find(p => p.type === type).value;
-  return { day: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(get("weekday")), h: +get("hour"), m: +get("minute") };
+// Current time from the phone/browser that opens the page (its own clock and time zone)
+function deviceNow() {
+  const d = new Date();
+  return { day: (d.getDay() + 6) % 7, h: d.getHours(), m: d.getMinutes() };
 }
 function fillNow() {
-  const n = madridNow();
+  const n = deviceNow();
   $("a-day").value = n.day; $("a-h").value = n.h; $("a-m").value = n.m;
 }
 
@@ -268,7 +277,7 @@ function applyLang(l) {
   document.querySelectorAll(".langs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
   document.querySelectorAll("[data-t]").forEach(el => { el.textContent = T()[el.dataset.t]; });
   $("t-title").textContent = T().title; $("t-sub").textContent = T().sub;
-  document.title = T().title;
+  document.title = `Florin Fresco · ${T().title}`;
   $("tab-add").textContent = T().tabAdd; $("tab-diff").textContent = T().tabDiff;
   for (const id of ["a-day", "f-day", "t-day"]) {
     const v = $(id).value;
@@ -408,6 +417,9 @@ function setMode(m) {
 $("tab-add").onclick = () => setMode("add");
 $("tab-diff").onclick = () => setMode("diff");
 $("btn-now").onclick = () => { fillNow(); render(); };
+const setNow = p => { const n = deviceNow(); $(p + "-day").value = n.day; $(p + "-h").value = n.h; $(p + "-m").value = n.m; render(); };
+$("btn-now-f").onclick = () => setNow("f");
+$("btn-now-t").onclick = () => setNow("t");
 $("presets").addEventListener("click", e => {
   const b = e.target.closest(".chip"); if (!b) return;
   $("d-h").value = b.dataset.h; $("d-m").value = b.dataset.m; render();
@@ -423,7 +435,7 @@ const phone = (navigator.language || "es").slice(0, 2);
 for (const id of ["a-day", "f-day", "t-day"]) $(id).innerHTML = "<option value='0'></option>";
 applyLang(saved || (I18N[phone] ? phone : "es"));
 fillNow();
-const n = madridNow(); $("f-day").value = n.day; $("t-day").value = (n.day + 1) % 7;
+const n = deviceNow(); $("f-day").value = n.day; $("t-day").value = (n.day + 1) % 7;
 render();
 
 if ("serviceWorker" in navigator && location.protocol === "https:") {
