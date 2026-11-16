@@ -61,6 +61,12 @@ select, input { font: 700 1.5rem var(--font); color: var(--ink); background: var
 .hhmm { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; direction: ltr; justify-content: flex-start; }
 .hhmm .colon { padding: 0; }
 
+.step { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .95rem; color: var(--ink); margin-top: 4px; }
+.step .n { flex: none; width: 1.7em; height: 1.7em; border-radius: 50%; background: var(--drive); color: var(--card); display: grid; place-items: center; font-size: .85rem; }
+#mode-add { gap: 8px; }
+label.step { text-transform: none; letter-spacing: 0; display: flex; }
+#mode-add > select { width: 100%; }
+#mode-add > .now { justify-self: start; margin: 0; }
 .sep { border: 0; border-top: 1px dashed var(--line); margin: 2px 0; width: 100%; }
 @media (min-width: 560px) {
   .tblock { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "day time now"; }
@@ -102,17 +108,16 @@ footer { font-size: .8rem; color: var(--muted); text-align: center; }
   </div>
 
   <section id="mode-add" class="card">
-    <div class="tblock">
-      <label for="a-day"><span data-t="day"></span><select id="a-day"></select></label>
-      <div class="field"><span class="cap" data-t="hour"></span>
-        <div class="hhmm"><input id="a-h" class="num" type="text" inputmode="numeric" maxlength="2" aria-label="h"><span class="colon">:</span><input id="a-m" class="num mm" type="text" inputmode="numeric" maxlength="2" aria-label="min"></div>
-      </div>
-      <button class="now" id="btn-now" data-t="now"></button>
-    </div>
-    <div class="field"><span class="cap" data-t="addH"></span>
-      <div class="hhmm"><input id="d-h" class="num" type="text" inputmode="numeric" maxlength="3" value="15" aria-label="h"><span class="colon">:</span><input id="d-m" class="num mm" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="min"></div>
-    </div>
+    <div class="step"><span class="n">1</span><span data-t="s1"></span></div>
+    <button class="now" id="btn-now" data-t="now"></button>
+    <label for="a-day" class="step"><span class="n">2</span><span data-t="s2"></span></label>
+    <select id="a-day"></select>
+    <div class="step"><span class="n">3</span><span data-t="s3"></span></div>
+    <div class="hhmm"><input id="a-h" class="num" type="text" inputmode="numeric" maxlength="2" aria-label="h"><span class="colon">:</span><input id="a-m" class="num mm" type="text" inputmode="numeric" maxlength="2" aria-label="min"></div>
+    <div class="step"><span class="n">4</span><span data-t="s4"></span></div>
     <div class="chips" id="presets"></div>
+    <div class="step"><span class="n">5</span><span data-t="s5"></span></div>
+    <div class="hhmm"><input id="d-h" class="num" type="text" inputmode="numeric" maxlength="3" value="15" aria-label="h"><span class="colon">:</span><input id="d-m" class="num mm" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="min"></div>
   </section>
 
   <section id="mode-diff" class="card" hidden>
@@ -133,6 +138,7 @@ footer { font-size: .8rem; color: var(--muted); text-align: center; }
     </div>
   </section>
 
+  <div class="step" id="step6"><span class="n">6</span><span data-t="s6"></span></div>
   <div class="result" aria-live="polite">
     <span class="lbl" id="r-lbl"></span>
     <span class="big" id="r-big" dir="ltr"></span>
@@ -165,7 +171,7 @@ const I18N = {
     title: "Calculadora de horas",
     sub: "Calcula a qué hora y qué día terminas, o cuánto tiempo ha pasado. Formato 24 horas, con la hora de tu teléfono.",
     tabAdd: "¿A qué hora termino?", tabDiff: "¿Cuánto tiempo ha pasado?",
-    day: "Día", hour: "Hora", min: "Min", now: "🕒 Ahora", addH: "Sumar horas", from: "Desde", to: "Hasta",
+    day: "Día", hour: "Hora", min: "Min", now: "🕒 Ahora", s1: "Pulsa para poner la hora actual", s2: "Día", s3: "Hora y minutos", s4: "Suma rápida", s5: "O escribe las horas a sumar", s6: "Resultado", addH: "Sumar horas", from: "Desde", to: "Hasta",
     days: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
     same: "el mismo día", tomorrow: "mañana", after: "pasado mañana", inDays: "dentro de {n} días",
     presets: ["conducción", "descanso reducido", "descanso", "jornada", "jornada", "un día", "descanso semanal"],
@@ -197,7 +203,7 @@ const I18N = {
     title: "Calculator ore șofer",
     sub: "Afli la ce oră și în ce zi termini, sau cât timp a trecut. Ora pe 24 de ore, ora din telefonul tău.",
     tabAdd: "La ce oră termin?", tabDiff: "Cât timp a trecut?",
-    day: "Ziua", hour: "Ora", min: "Min", now: "🕒 Acum", addH: "Adun ore", from: "De la", to: "Până la",
+    day: "Ziua", hour: "Ora", min: "Min", now: "🕒 Acum", s1: "Apasă ca să pui ora de acum", s2: "Ziua", s3: "Ora și minutele", s4: "Adunare rapidă", s5: "Sau scrie orele de adunat", s6: "Rezultat", addH: "Adun ore", from: "De la", to: "Până la",
     days: ["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"],
     same: "aceeași zi", tomorrow: "mâine", after: "poimâine", inDays: "peste {n} zile",
     presets: ["condus", "odihnă redusă", "odihnă", "program", "program", "o zi", "odihnă săpt."],
@@ -229,7 +235,7 @@ const I18N = {
     title: "حاسبة ساعات السائق",
     sub: "احسب في أي ساعة وأي يوم تنتهي، أو كم من الوقت مضى. نظام 24 ساعة، حسب ساعة هاتفك.",
     tabAdd: "متى أنتهي؟", tabDiff: "كم مضى من الوقت؟",
-    day: "اليوم", hour: "الساعة", min: "الدقائق", now: "🕒 الآن", addH: "أضف ساعات", from: "من", to: "إلى",
+    day: "اليوم", hour: "الساعة", min: "الدقائق", now: "🕒 الآن", s1: "اضغط لوضع الوقت الحالي", s2: "اليوم", s3: "الساعة والدقائق", s4: "إضافة سريعة", s5: "أو اكتب الساعات المراد إضافتها", s6: "النتيجة", addH: "أضف ساعات", from: "من", to: "إلى",
     days: ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"],
     same: "نفس اليوم", tomorrow: "غدًا", after: "بعد غد", inDays: "بعد {n} أيام",
     presets: ["قيادة", "راحة مخفضة", "راحة", "دوام", "دوام", "يوم", "راحة أسبوعية"],
@@ -423,7 +429,7 @@ function setMode(m) {
   mode = m;
   $("tab-add").setAttribute("aria-selected", m === "add");
   $("tab-diff").setAttribute("aria-selected", m === "diff");
-  $("mode-add").hidden = m !== "add"; $("mode-diff").hidden = m !== "diff";
+  $("mode-add").hidden = m !== "add"; $("mode-diff").hidden = m !== "diff"; $("step6").hidden = m !== "add";
   render();
 }
 
