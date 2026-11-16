@@ -50,10 +50,24 @@ h1 { font-size: 1.7rem; } h2 { font-size: 1.2rem; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
 label { display: grid; gap: 4px; font-size: .8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 select, input { font: 700 1.5rem var(--font); color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; font-variant-numeric: tabular-nums; }
-input[type="number"] { width: 4.2em; text-align: center; }
+.num { width: 3.1em; text-align: center; }
+.tblock { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "day day" "time now"; gap: 10px; align-items: end; }
+.tblock > label { grid-area: day; }
+.tblock > .field { grid-area: time; }
+.tblock > .now { grid-area: now; justify-self: start; }
+.tblock select { width: 100%; }
+.field { display: grid; gap: 4px; }
+.cap { font-size: .8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.hhmm { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; direction: ltr; justify-content: flex-start; }
+.hhmm .colon { padding: 0; }
+
+.sep { border: 0; border-top: 1px dashed var(--line); margin: 2px 0; width: 100%; }
+@media (min-width: 560px) {
+  .tblock { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "day time now"; }
+}
 select:focus-visible, input:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .colon { font: 700 1.6rem var(--font); padding-bottom: 10px; }
-.now { font: 700 1.05rem var(--font); border: 2px solid var(--drive); color: var(--card); background: var(--drive); border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.now { font: 700 .95rem var(--font); border: 2px solid var(--drive); color: var(--drive); background: transparent; border-radius: 10px; padding: 8px 12px; cursor: pointer; white-space: nowrap; margin-bottom: 6px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { font: 700 1rem var(--font); border: 2px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
 .chip small { color: var(--muted); font-weight: 500; }
@@ -88,34 +102,33 @@ footer { font-size: .8rem; color: var(--muted); text-align: center; }
   </div>
 
   <section id="mode-add" class="card">
-    <div class="row">
+    <div class="tblock">
       <label for="a-day"><span data-t="day"></span><select id="a-day"></select></label>
-      <label for="a-h"><span data-t="hour"></span><input id="a-h" type="number" min="0" max="23" inputmode="numeric"></label>
-      <span class="colon">:</span>
-      <label for="a-m"><span data-t="min"></span><input id="a-m" type="number" min="0" max="59" inputmode="numeric"></label>
+      <div class="field"><span class="cap" data-t="hour"></span>
+        <div class="hhmm"><input id="a-h" class="num" type="text" inputmode="numeric" maxlength="2" aria-label="h"><span class="colon">:</span><input id="a-m" class="num mm" type="text" inputmode="numeric" maxlength="2" aria-label="min"></div>
+      </div>
       <button class="now" id="btn-now" data-t="now"></button>
     </div>
-    <div class="row">
-      <label for="d-h"><span data-t="addH"></span><input id="d-h" type="number" min="0" max="120" value="15" inputmode="numeric"></label>
-      <span class="colon">:</span>
-      <label for="d-m"><span data-t="min"></span><input id="d-m" type="number" min="0" max="59" value="0" inputmode="numeric"></label>
+    <div class="field"><span class="cap" data-t="addH"></span>
+      <div class="hhmm"><input id="d-h" class="num" type="text" inputmode="numeric" maxlength="3" value="15" aria-label="h"><span class="colon">:</span><input id="d-m" class="num mm" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="min"></div>
     </div>
     <div class="chips" id="presets"></div>
   </section>
 
   <section id="mode-diff" class="card" hidden>
-    <div class="row">
+    <div class="tblock">
       <label for="f-day"><span data-t="from"></span><select id="f-day"></select></label>
-      <label for="f-h"><span data-t="hour"></span><input id="f-h" type="number" min="0" max="23" value="21" inputmode="numeric"></label>
-      <span class="colon">:</span>
-      <label for="f-m"><span data-t="min"></span><input id="f-m" type="number" min="0" max="59" value="10" inputmode="numeric"></label>
+      <div class="field"><span class="cap" data-t="hour"></span>
+        <div class="hhmm"><input id="f-h" class="num" type="text" inputmode="numeric" maxlength="2" value="21" aria-label="h"><span class="colon">:</span><input id="f-m" class="num mm" type="text" inputmode="numeric" maxlength="2" value="10" aria-label="min"></div>
+      </div>
       <button class="now" id="btn-now-f" data-t="now"></button>
     </div>
-    <div class="row">
+    <hr class="sep">
+    <div class="tblock">
       <label for="t-day"><span data-t="to"></span><select id="t-day"></select></label>
-      <label for="t-h"><span data-t="hour"></span><input id="t-h" type="number" min="0" max="23" value="8" inputmode="numeric"></label>
-      <span class="colon">:</span>
-      <label for="t-m"><span data-t="min"></span><input id="t-m" type="number" min="0" max="59" value="40" inputmode="numeric"></label>
+      <div class="field"><span class="cap" data-t="hour"></span>
+        <div class="hhmm"><input id="t-h" class="num" type="text" inputmode="numeric" maxlength="2" value="08" aria-label="h"><span class="colon">:</span><input id="t-m" class="num mm" type="text" inputmode="numeric" maxlength="2" value="40" aria-label="min"></div>
+      </div>
       <button class="now" id="btn-now-t" data-t="now"></button>
     </div>
   </section>
@@ -152,7 +165,7 @@ const I18N = {
     title: "Calculadora de horas",
     sub: "Calcula a qué hora y qué día terminas, o cuánto tiempo ha pasado. Formato 24 horas, con la hora de tu teléfono.",
     tabAdd: "¿A qué hora termino?", tabDiff: "¿Cuánto tiempo ha pasado?",
-    day: "Día", hour: "Hora", min: "Min", now: "🕒 Hora actual", addH: "Sumar horas", from: "Desde", to: "Hasta",
+    day: "Día", hour: "Hora", min: "Min", now: "🕒 Ahora", addH: "Sumar horas", from: "Desde", to: "Hasta",
     days: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
     same: "el mismo día", tomorrow: "mañana", after: "pasado mañana", inDays: "dentro de {n} días",
     presets: ["conducción", "descanso reducido", "descanso", "jornada", "jornada", "un día", "descanso semanal"],
@@ -184,7 +197,7 @@ const I18N = {
     title: "Calculator ore șofer",
     sub: "Afli la ce oră și în ce zi termini, sau cât timp a trecut. Ora pe 24 de ore, ora din telefonul tău.",
     tabAdd: "La ce oră termin?", tabDiff: "Cât timp a trecut?",
-    day: "Ziua", hour: "Ora", min: "Min", now: "🕒 Ora de acum", addH: "Adun ore", from: "De la", to: "Până la",
+    day: "Ziua", hour: "Ora", min: "Min", now: "🕒 Acum", addH: "Adun ore", from: "De la", to: "Până la",
     days: ["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"],
     same: "aceeași zi", tomorrow: "mâine", after: "poimâine", inDays: "peste {n} zile",
     presets: ["condus", "odihnă redusă", "odihnă", "program", "program", "o zi", "odihnă săpt."],
@@ -216,7 +229,7 @@ const I18N = {
     title: "حاسبة ساعات السائق",
     sub: "احسب في أي ساعة وأي يوم تنتهي، أو كم من الوقت مضى. نظام 24 ساعة، حسب ساعة هاتفك.",
     tabAdd: "متى أنتهي؟", tabDiff: "كم مضى من الوقت؟",
-    day: "اليوم", hour: "الساعة", min: "الدقائق", now: "🕒 الوقت الحالي", addH: "أضف ساعات", from: "من", to: "إلى",
+    day: "اليوم", hour: "الساعة", min: "الدقائق", now: "🕒 الآن", addH: "أضف ساعات", from: "من", to: "إلى",
     days: ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"],
     same: "نفس اليوم", tomorrow: "غدًا", after: "بعد غد", inDays: "بعد {n} أيام",
     presets: ["قيادة", "راحة مخفضة", "راحة", "دوام", "دوام", "يوم", "راحة أسبوعية"],
@@ -266,7 +279,7 @@ function deviceNow() {
 }
 function fillNow() {
   const n = deviceNow();
-  $("a-day").value = n.day; $("a-h").value = n.h; $("a-m").value = n.m;
+  $("a-day").value = n.day; $("a-h").value = pad(n.h); $("a-m").value = pad(n.m);
 }
 
 function applyLang(l) {
@@ -417,12 +430,15 @@ function setMode(m) {
 $("tab-add").onclick = () => setMode("add");
 $("tab-diff").onclick = () => setMode("diff");
 $("btn-now").onclick = () => { fillNow(); render(); };
-const setNow = p => { const n = deviceNow(); $(p + "-day").value = n.day; $(p + "-h").value = n.h; $(p + "-m").value = n.m; render(); };
+const setNow = p => { const n = deviceNow(); $(p + "-day").value = n.day; $(p + "-h").value = pad(n.h); $(p + "-m").value = pad(n.m); render(); };
+document.querySelectorAll(".num").forEach(el => el.addEventListener("blur", () => {
+  const v = parseInt(el.value, 10); if (!isNaN(v)) el.value = el.id === "d-h" ? String(v) : pad(v);
+}));
 $("btn-now-f").onclick = () => setNow("f");
 $("btn-now-t").onclick = () => setNow("t");
 $("presets").addEventListener("click", e => {
   const b = e.target.closest(".chip"); if (!b) return;
-  $("d-h").value = b.dataset.h; $("d-m").value = b.dataset.m; render();
+  $("d-h").value = b.dataset.h; $("d-m").value = pad(+b.dataset.m); render();
 });
 document.querySelectorAll(".langs button").forEach(b => b.onclick = () => applyLang(b.dataset.lang));
 document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", render));
