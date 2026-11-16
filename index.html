@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculadora de horas</title>
+<meta name="theme-color" content="#e8a200">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Horas">
+<style>
+/* Layout: one narrow column like a phone in the cab; result first, then the day strip and the step-by-step */
+:root {
+  --bg: #eef1f4; --card: #ffffff; --ink: #18202a; --muted: #5a6573; --line: #d4dae1;
+  --accent: #e8a200; --accent-ink: #3a2a00; --drive: #2f6fb3; --rest: #2e8a57; --night: #dfe5ec;
+  --font: "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans Arabic", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg: #12171d; --card: #1b222b; --ink: #e9eef3; --muted: #9aa6b4; --line: #2c3642;
+  --accent: #f2b52a; --accent-ink: #241900; --drive: #6ea6e6; --rest: #5cc28a; --night: #232c37; color-scheme: dark } }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.45;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.wrap { max-width: 640px; margin: 0 auto; padding-block: 16px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 16px; }
+h1, h2 { margin: 0; line-height: 1.15; }
+h1 { font-size: 1.7rem; } h2 { font-size: 1.2rem; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.langs { display: flex; gap: 6px; }
+.langs button { font: 700 .95rem var(--font); border: 2px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+.langs button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.sub { color: var(--muted); margin: 0; }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 5px; }
+.tabs button { font: 700 1rem var(--font); border: 0; border-radius: 8px; padding: 12px 8px; background: transparent; color: var(--muted); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.wrap > * { min-width: 0; }
+.card { min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 14px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+label { display: grid; gap: 4px; font-size: .8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+select, input { font: 700 1.5rem var(--font); color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; font-variant-numeric: tabular-nums; }
+input[type="number"] { width: 4.2em; text-align: center; }
+select:focus-visible, input:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.colon { font: 700 1.6rem var(--font); padding-bottom: 10px; }
+.now { font: 700 1rem var(--font); border: 2px solid var(--drive); color: var(--drive); background: transparent; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 700 1rem var(--font); border: 2px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+.chip small { color: var(--muted); font-weight: 500; }
+.result { background: var(--accent); color: var(--accent-ink); border-radius: 14px; padding: 16px 18px; display: grid; gap: 2px; }
+.result .lbl { font-weight: 600; font-size: .95rem; }
+.result .big { font: 800 2.8rem/1.05 var(--font); font-variant-numeric: tabular-nums; }
+.result .when { font-weight: 700; font-size: 1.1rem; }
+.steps { margin: 0; padding-inline-start: 1.3em; display: grid; gap: 10px; }
+.calc { font-weight: 700; font-size: 1.1rem; background: var(--bg); border-radius: 8px; padding: 3px 10px; display: inline-block; margin-top: 4px; font-variant-numeric: tabular-nums; unicode-bidi: isolate; direction: ltr; }
+.method { display: grid; gap: 8px; }
+.method h3 { margin: 0; font-size: 1.05rem; color: var(--drive); }
+.strip-wrap { overflow-x: auto; direction: ltr; }
+.rules { margin: 0; padding-inline-start: 1.1em; display: grid; gap: 6px; }
+.note { font-size: .9rem; color: var(--muted); margin: 0; }
+footer { font-size: .8rem; color: var(--muted); text-align: center; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1 id="t-title"></h1>
+    <div class="langs" role="group" aria-label="Idioma">
+      <button data-lang="es">ES</button><button data-lang="ro">RO</button><button data-lang="ar">ع</button>
+    </div>
+  </div>
+  <p class="sub" id="t-sub"></p>
+
+  <div class="tabs" role="tablist">
+    <button id="tab-add" role="tab" aria-selected="true"></button>
+    <button id="tab-diff" role="tab" aria-selected="false"></button>
+  </div>
+
+  <section id="mode-add" class="card">
+    <div class="row">
+      <label for="a-day"><span data-t="day"></span><select id="a-day"></select></label>
+      <label for="a-h"><span data-t="hour"></span><input id="a-h" type="number" min="0" max="23" inputmode="numeric"></label>
+      <span class="colon">:</span>
+      <label for="a-m"><span data-t="min"></span><input id="a-m" type="number" min="0" max="59" inputmode="numeric"></label>
+      <button class="now" id="btn-now" data-t="now"></button>
+    </div>
+    <div class="row">
+      <label for="d-h"><span data-t="addH"></span><input id="d-h" type="number" min="0" max="120" value="15" inputmode="numeric"></label>
+      <span class="colon">:</span>
+      <label for="d-m"><span data-t="min"></span><input id="d-m" type="number" min="0" max="59" value="0" inputmode="numeric"></label>
+    </div>
+    <div class="chips" id="presets"></div>
+  </section>
+
+  <section id="mode-diff" class="card" hidden>
+    <div class="row">
+      <label for="f-day"><span data-t="from"></span><select id="f-day"></select></label>
+      <label for="f-h"><span data-t="hour"></span><input id="f-h" type="number" min="0" max="23" value="21" inputmode="numeric"></label>
+      <span class="colon">:</span>
+      <label for="f-m"><span data-t="min"></span><input id="f-m" type="number" min="0" max="59" value="10" inputmode="numeric"></label>
+    </div>
+    <div class="row">
+      <label for="t-day"><span data-t="to"></span><select id="t-day"></select></label>
+      <label for="t-h"><span data-t="hour"></span><input id="t-h" type="number" min="0" max="23" value="8" inputmode="numeric"></label>
+      <span class="colon">:</span>
+      <label for="t-m"><span data-t="min"></span><input id="t-m" type="number" min="0" max="59" value="40" inputmode="numeric"></label>
+    </div>
+  </section>
+
+  <div class="result" aria-live="polite">
+    <span class="lbl" id="r-lbl"></span>
+    <span class="big" id="r-big" dir="ltr"></span>
+    <span class="when" id="r-when"></span>
+  </div>
+
+  <section class="card">
+    <h2 data-t="stripTitle"></h2>
+    <div class="strip-wrap"><svg id="strip" role="img"></svg></div>
+    <p class="note" data-t="stripNote"></p>
+  </section>
+
+  <section class="card">
+    <h2 data-t="stepsTitle"></h2>
+    <div id="methods" style="display:grid;gap:18px"></div>
+  </section>
+
+  <section class="card">
+    <h2 data-t="rulesTitle"></h2>
+    <ul class="rules" id="rules"></ul>
+    <p class="note" data-t="example"></p>
+  </section>
+
+  <footer data-t="footer"></footer>
+</div>
+
+<script>
+const I18N = {
+  es: {
+    title: "Calculadora de horas",
+    sub: "Calcula a qué hora y qué día terminas, o cuánto tiempo ha pasado. Formato 24 horas, hora de España.",
+    tabAdd: "¿A qué hora termino?", tabDiff: "¿Cuánto tiempo ha pasado?",
+    day: "Día", hour: "Hora", min: "Min", now: "Ahora", addH: "Sumar horas", from: "Desde", to: "Hasta",
+    days: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
+    same: "el mismo día", tomorrow: "mañana", after: "pasado mañana", inDays: "dentro de {n} días",
+    presets: ["conducción", "descanso reducido", "descanso", "jornada", "jornada", "un día", "descanso semanal"],
+    stripTitle: "Por días", stripNote: "Las líneas gruesas son la medianoche (00:00). Cada medianoche empieza un día nuevo.",
+    stepsTitle: "Cómo se calcula, paso a paso",
+    m1: "Método 1 · Sumo y resto 24", addMin: "Suma los minutos: {calc}", over60: "Más de 60 minutos: {calc} y una hora más.",
+    addHours: "Suma las horas: {calc}", over24: "{h} es más de 24, se pasa la medianoche: {calc} → {day}",
+    result: "Resultado: {day} a las {time} ({rel}).",
+    m2: "Método 2 · Cuento hasta medianoche",
+    sameDay: "Hasta medianoche faltan {toMid}. Tu tiempo ({dur}) es menor: terminas el mismo día, a las {time}.",
+    toMid: "Desde las {start} hasta medianoche: {calc}", remain: "Lo que queda: {calc}",
+    fullDay: "Otro día entero ({day}): {calc}", readRest: "Lo que queda es la hora del día siguiente: {day} a las {time}.",
+    trickT: "Truco rápido", trick: "Sumar {dur} es lo mismo que restar {back} y pasar al día siguiente: {calc} → {rel}.",
+    err: "La hora final es anterior a la de inicio. Revisa los días.",
+    dSame: "El mismo día: {calc}", dFull: "Días enteros en medio: {calc}", dAfter: "Desde medianoche hasta las {end}: {dur}", dSum: "Suma: {calc}",
+    c45: "Suficiente para descanso semanal normal (45 h).", c24: "Suficiente para descanso semanal reducido (24 h).",
+    c11: "Suficiente para descanso diario normal (11 h).", c9: "Suficiente para descanso diario reducido (9 h).",
+    cNo: "No llega a descanso diario (mínimo 9 h).",
+    lblAdd: "{day} {time} + {dur}", lblDiff: "{d1} {t1} → {d2} {t2}", hm: "{h} horas y {m} minutos",
+    rulesTitle: "Las cifras del tacógrafo",
+    rules: ["4 h 30 de conducción seguida, luego pausa de 45 min (o 15 min + 30 min).",
+      "Descanso diario normal: 11 h. Reducido: 9 h, como máximo 3 veces entre dos descansos semanales.",
+      "El descanso debe terminar dentro de las 24 h desde que empezaste la jornada. Con 11 h de descanso te quedan 13 h de jornada; con 9 h te quedan 15 h.",
+      "Descanso semanal normal: 45 h. Reducido: 24 h."],
+    example: "Ejemplo: empiezas la jornada a las 18:33 y vas a hacer descanso reducido de 9 h. Suma 15 h: es la hora límite para empezar el descanso.",
+    footer: "Florin Fresco S.L.U. · Herramienta de ayuda. La referencia legal es siempre el tacógrafo.",
+  },
+  ro: {
+    title: "Calculator ore șofer",
+    sub: "Afli la ce oră și în ce zi termini, sau cât timp a trecut. Ora pe 24 de ore, ora Spaniei.",
+    tabAdd: "La ce oră termin?", tabDiff: "Cât timp a trecut?",
+    day: "Ziua", hour: "Ora", min: "Min", now: "Acum", addH: "Adun ore", from: "De la", to: "Până la",
+    days: ["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"],
+    same: "aceeași zi", tomorrow: "mâine", after: "poimâine", inDays: "peste {n} zile",
+    presets: ["condus", "odihnă redusă", "odihnă", "program", "program", "o zi", "odihnă săpt."],
+    stripTitle: "Pe zile", stripNote: "Liniile groase sunt miezul nopții (00:00). La fiecare miez de noapte începe o zi nouă.",
+    stepsTitle: "Cum se calculează, pas cu pas",
+    m1: "Metoda 1 · Adun și scad 24", addMin: "Adună minutele: {calc}", over60: "Peste 60 de minute: {calc} și o oră în plus.",
+    addHours: "Adună orele: {calc}", over24: "{h} e peste 24, deci trece miezul nopții: {calc} → {day}",
+    result: "Rezultat: {day} la {time} ({rel}).",
+    m2: "Metoda 2 · Număr până la miezul nopții",
+    sameDay: "Până la miezul nopții sunt {toMid}. Durata ta ({dur}) e mai mică: termini în aceeași zi, la {time}.",
+    toMid: "De la {start} până la miezul nopții: {calc}", remain: "Cât mai rămâne: {calc}",
+    fullDay: "Încă o zi întreagă ({day}): {calc}", readRest: "Ce rămâne este ora din ziua următoare: {day} la {time}.",
+    trickT: "Truc rapid", trick: "A aduna {dur} e același lucru cu a scădea {back} și a trece la ziua următoare: {calc} → {rel}.",
+    err: "Ora de sfârșit e înaintea orei de început. Verifică zilele.",
+    dSame: "Aceeași zi: {calc}", dFull: "Zile întregi la mijloc: {calc}", dAfter: "De la miezul nopții până la {end}: {dur}", dSum: "Adună: {calc}",
+    c45: "Ajunge pentru odihnă săptămânală normală (45h).", c24: "Ajunge pentru odihnă săptămânală redusă (24h).",
+    c11: "Ajunge pentru odihnă zilnică normală (11h).", c9: "Ajunge pentru odihnă zilnică redusă (9h).",
+    cNo: "Nu ajunge pentru odihnă zilnică (minim 9h).",
+    lblAdd: "{day} {time} + {dur}", lblDiff: "{d1} {t1} → {d2} {t2}", hm: "{h} ore și {m} minute",
+    rulesTitle: "Cifrele din tahograf",
+    rules: ["4h30 condus fără oprire, apoi pauză de 45 min (sau 15 min + 30 min).",
+      "Odihnă zilnică normală: 11h. Redusă: 9h, de cel mult 3 ori între două odihne săptămânale.",
+      "Odihna trebuie terminată în 24h de la începutul zilei de lucru. Cu 11h odihnă îți rămân 13h de program; cu 9h îți rămân 15h.",
+      "Odihnă săptămânală normală: 45h. Redusă: 24h."],
+    example: "Exemplu: începi lucrul la 18:33 și faci odihnă redusă de 9h. Adună 15h: e ora limită până la care trebuie să începi odihna.",
+    footer: "Florin Fresco S.L.U. · Instrument de ajutor. Referința legală rămâne întotdeauna tahograful.",
+  },
+  ar: {
+    title: "حاسبة ساعات السائق",
+    sub: "احسب في أي ساعة وأي يوم تنتهي، أو كم من الوقت مضى. نظام 24 ساعة، بتوقيت إسبانيا.",
+    tabAdd: "متى أنتهي؟", tabDiff: "كم مضى من الوقت؟",
+    day: "اليوم", hour: "الساعة", min: "الدقائق", now: "الآن", addH: "أضف ساعات", from: "من", to: "إلى",
+    days: ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"],
+    same: "نفس اليوم", tomorrow: "غدًا", after: "بعد غد", inDays: "بعد {n} أيام",
+    presets: ["قيادة", "راحة مخفضة", "راحة", "دوام", "دوام", "يوم", "راحة أسبوعية"],
+    stripTitle: "حسب الأيام", stripNote: "الخطوط السميكة هي منتصف الليل (00:00). عند كل منتصف ليل يبدأ يوم جديد.",
+    stepsTitle: "طريقة الحساب خطوة بخطوة",
+    m1: "الطريقة 1 · أجمع وأطرح 24", addMin: "اجمع الدقائق: {calc}", over60: "أكثر من 60 دقيقة: {calc} وساعة إضافية.",
+    addHours: "اجمع الساعات: {calc}", over24: "{h} أكثر من 24، إذن نتجاوز منتصف الليل: {calc} ← {day}",
+    result: "النتيجة: {day} الساعة {time} ({rel}).",
+    m2: "الطريقة 2 · أعدّ حتى منتصف الليل",
+    sameDay: "حتى منتصف الليل يتبقى {toMid}. مدتك ({dur}) أقل: تنتهي في نفس اليوم الساعة {time}.",
+    toMid: "من {start} حتى منتصف الليل: {calc}", remain: "المتبقي: {calc}",
+    fullDay: "يوم كامل آخر ({day}): {calc}", readRest: "المتبقي هو الساعة في اليوم التالي: {day} الساعة {time}.",
+    trickT: "حيلة سريعة", trick: "إضافة {dur} هي نفس طرح {back} والانتقال إلى اليوم التالي: {calc} ← {rel}.",
+    err: "وقت النهاية قبل وقت البداية. تحقق من الأيام.",
+    dSame: "نفس اليوم: {calc}", dFull: "أيام كاملة بينهما: {calc}", dAfter: "من منتصف الليل حتى {end}: {dur}", dSum: "المجموع: {calc}",
+    c45: "كافية لراحة أسبوعية عادية (45 ساعة).", c24: "كافية لراحة أسبوعية مخفضة (24 ساعة).",
+    c11: "كافية لراحة يومية عادية (11 ساعة).", c9: "كافية لراحة يومية مخفضة (9 ساعات).",
+    cNo: "لا تكفي للراحة اليومية (9 ساعات على الأقل).",
+    lblAdd: "{day} {time} + {dur}", lblDiff: "{d1} {t1} ← {d2} {t2}", hm: "{h} ساعة و{m} دقيقة",
+    rulesTitle: "أرقام جهاز التاكوغراف",
+    rules: ["4 ساعات و30 دقيقة قيادة متواصلة، ثم استراحة 45 دقيقة (أو 15 دقيقة + 30 دقيقة).",
+      "الراحة اليومية العادية: 11 ساعة. المخفضة: 9 ساعات، 3 مرات كحد أقصى بين راحتين أسبوعيتين.",
+      "يجب أن تنتهي الراحة خلال 24 ساعة من بداية يوم العمل. مع 11 ساعة راحة يبقى لك 13 ساعة عمل، ومع 9 ساعات يبقى لك 15 ساعة.",
+      "الراحة الأسبوعية العادية: 45 ساعة. المخفضة: 24 ساعة."],
+    example: "مثال: تبدأ العمل الساعة 18:33 وستأخذ راحة مخفضة 9 ساعات. أضف 15 ساعة: هذه آخر ساعة لبدء الراحة.",
+    footer: "Florin Fresco S.L.U. · أداة مساعدة. المرجع القانوني هو دائمًا جهاز التاكوغراف.",
+  },
+};
+const PRESETS = [[4, 30], [9, 0], [11, 0], [13, 0], [15, 0], [24, 0], [45, 0]];
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, "0");
+const hm = mins => `${pad(Math.floor(mins / 60) % 24)}:${pad(mins % 60)}`;
+const dur = mins => { const h = Math.floor(mins / 60), m = mins % 60; return m ? `${h}h ${pad(m)}min` : `${h}h`; };
+const calc = s => `<span class="calc">${s}</span>`;
+const clampInt = (el, lo, hi) => { let v = parseInt(el.value, 10); if (isNaN(v)) v = lo; return Math.max(lo, Math.min(hi, v)); };
+
+let lang = "es", mode = "add";
+const T = () => I18N[lang];
+const t = (key, vars = {}) => T()[key].replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
+const dayName = d => T().days[((d % 7) + 7) % 7];
+const relDay = off => off === 0 ? T().same : off === 1 ? T().tomorrow : off === 2 ? T().after : t("inDays", { n: off });
+
+function madridNow() {
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
+  const get = type => parts.find(p => p.type === type).value;
+  return { day: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(get("weekday")), h: +get("hour"), m: +get("minute") };
+}
+function fillNow() {
+  const n = madridNow();
+  $("a-day").value = n.day; $("a-h").value = n.h; $("a-m").value = n.m;
+}
+
+function applyLang(l) {
+  lang = I18N[l] ? l : "es";
+  try { localStorage.setItem("lang", lang); } catch (e) {}
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.querySelectorAll(".langs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = T()[el.dataset.t]; });
+  $("t-title").textContent = T().title; $("t-sub").textContent = T().sub;
+  document.title = T().title;
+  $("tab-add").textContent = T().tabAdd; $("tab-diff").textContent = T().tabDiff;
+  for (const id of ["a-day", "f-day", "t-day"]) {
+    const v = $(id).value;
+    $(id).innerHTML = T().days.map((d, i) => `<option value="${i}">${d}</option>`).join("");
+    if (v !== "") $(id).value = v;
+  }
+  $("presets").innerHTML = PRESETS.map(([h, m], i) =>
+    `<button class="chip" data-h="${h}" data-m="${m}"><span dir="ltr">+${m ? h + "h" + pad(m) : h + "h"}</span> <small>${T().presets[i]}</small></button>`).join("");
+  $("rules").innerHTML = T().rules.map(r => `<li>${r}</li>`).join("");
+  render();
+}
+
+function addTime(day, startMin, durMin) {
+  const total = startMin + durMin;
+  return { endMin: total % 1440, dayOff: Math.floor(total / 1440), endDay: day + Math.floor(total / 1440) };
+}
+
+function stepsAdd(day, sh, sm, dh, dm, res) {
+  let mins = sm + dm, carry = 0;
+  const out = [`<li>${t("addMin", { calc: calc(`${sm} + ${dm} = ${mins}`) })}` +
+    (mins >= 60 ? `<br>${t("over60", { calc: calc(`${mins} − 60 = ${mins - 60}`) })}` : "") + `</li>`];
+  if (mins >= 60) { mins -= 60; carry = 1; }
+  let h = sh + dh + carry, days = 0;
+  out.push(`<li>${t("addHours", { calc: calc(`${sh} + ${dh}${carry ? " + 1" : ""} = ${h}`) })}</li>`);
+  while (h >= 24) {
+    out.push(`<li>${t("over24", { h, calc: calc(`${h} − 24 = ${h - 24}`), day: dayName(day + days + 1) })}</li>`);
+    h -= 24; days++;
+  }
+  out.push(`<li><b>${t("result", { day: dayName(res.endDay), time: `${pad(h)}:${pad(mins)}`, rel: relDay(res.dayOff) })}</b></li>`);
+  let html = `<div class="method"><h3>${T().m1}</h3><ol class="steps">${out.join("")}</ol></div>`;
+
+  const startMin = sh * 60 + sm, durMin = dh * 60 + dm, toMid = 1440 - startMin;
+  let lines = [];
+  if (durMin < toMid) {
+    lines.push(`<li>${t("sameDay", { toMid: dur(toMid), dur: dur(durMin), time: hm(startMin + durMin) })}</li>`);
+  } else {
+    let rest = durMin - toMid, d = 1;
+    lines.push(`<li>${t("toMid", { start: hm(startMin), calc: calc(`24:00 − ${hm(startMin)} = ${dur(toMid)}`) })}</li>`);
+    lines.push(`<li>${t("remain", { calc: calc(`${dur(durMin)} − ${dur(toMid)} = ${dur(rest)}`) })}</li>`);
+    while (rest >= 1440) {
+      lines.push(`<li>${t("fullDay", { day: dayName(day + d), calc: calc(`${dur(rest)} − 24h = ${dur(rest - 1440)}`) })}</li>`);
+      rest -= 1440; d++;
+    }
+    lines.push(`<li><b>${t("readRest", { day: dayName(res.endDay), time: hm(rest) })}</b></li>`);
+  }
+  html += `<div class="method"><h3>${T().m2}</h3><ol class="steps">${lines.join("")}</ol></div>`;
+
+  if (durMin > 720 && durMin < 1440) {
+    const back = 1440 - durMin;
+    html += `<div class="method"><h3>${T().trickT}</h3><p style="margin:0">${t("trick", { dur: dur(durMin), back: dur(back), calc: calc(`${hm(startMin)} − ${dur(back)} = ${hm(startMin - back + 1440)}`), rel: relDay(res.dayOff) })}</p></div>`;
+  }
+  return html;
+}
+
+function stepsDiff(fd, fMin, td, tMin, total) {
+  if (total < 0) return `<p style="margin:0">${T().err}</p>`;
+  const days = td - fd;
+  let html;
+  if (days === 0) {
+    html = `<ol class="steps"><li>${t("dSame", { calc: calc(`${hm(tMin)} − ${hm(fMin)} = ${dur(total)}`) })}</li></ol>`;
+  } else {
+    const toMid = 1440 - fMin;
+    const lines = [`<li>${t("toMid", { start: hm(fMin), calc: calc(`24:00 − ${hm(fMin)} = ${dur(toMid)}`) })}</li>`];
+    if (days > 1) lines.push(`<li>${t("dFull", { calc: calc(`${days - 1} × 24h = ${(days - 1) * 24}h`) })}</li>`);
+    lines.push(`<li>${t("dAfter", { end: hm(tMin), dur: dur(tMin) })}</li>`);
+    lines.push(`<li><b>${t("dSum", { calc: calc(`${dur(toMid)}${days > 1 ? " + " + (days - 1) * 24 + "h" : ""} + ${dur(tMin)} = ${dur(total)}`) })}</b></li>`);
+    html = `<ol class="steps">${lines.join("")}</ol>`;
+  }
+  const check = total >= 2700 ? "c45" : total >= 1440 ? "c24" : total >= 660 ? "c11" : total >= 540 ? "c9" : "cNo";
+  return html + `<p class="note" style="margin:0">${T()[check]}</p>`;
+}
+
+function drawStrip(startDay, startMin, durMin) {
+  const svg = $("strip"), css = getComputedStyle(document.documentElement);
+  const col = n => css.getPropertyValue(n).trim();
+  const endAbs = startMin + durMin, nDays = Math.max(1, Math.floor((endAbs - 1) / 1440) + 1);
+  const dayW = 200, padX = 12, H = 104, W = padX * 2 + dayW * nDays;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.removeAttribute("width");
+  svg.style.width = nDays <= 2 ? "100%" : `${W * 0.8}px`; svg.style.height = "auto"; svg.style.display = "block";
+  const x = m => padX + (m / 1440) * dayW;
+  let s = "";
+  for (let d = 0; d < nDays; d++) {
+    s += `<rect x="${x(d * 1440)}" y="26" width="${dayW}" height="34" fill="${col("--night")}"/>`;
+    s += `<text x="${x(d * 1440 + 720)}" y="18" text-anchor="middle" font-size="14" font-weight="700" fill="${col("--ink")}">${dayName(startDay + d)}</text>`;
+    for (const h of [6, 12, 18]) {
+      s += `<line x1="${x(d * 1440 + h * 60)}" y1="26" x2="${x(d * 1440 + h * 60)}" y2="60" stroke="${col("--line")}" stroke-width="1"/>`;
+      s += `<text x="${x(d * 1440 + h * 60)}" y="76" text-anchor="middle" font-size="11" fill="${col("--muted")}">${pad(h)}</text>`;
+    }
+  }
+  for (let d = 0; d <= nDays; d++) {
+    s += `<line x1="${x(d * 1440)}" y1="22" x2="${x(d * 1440)}" y2="64" stroke="${col("--ink")}" stroke-width="2.5"/>`;
+    s += `<text x="${x(d * 1440)}" y="76" text-anchor="middle" font-size="11" font-weight="700" fill="${col("--ink")}">00</text>`;
+  }
+  s += `<rect x="${x(startMin)}" y="32" width="${Math.max(2, x(endAbs) - x(startMin))}" height="22" rx="4" fill="${col("--drive")}"/>`;
+  s += `<circle cx="${x(startMin)}" cy="43" r="6" fill="${col("--accent")}" stroke="${col("--ink")}" stroke-width="1.5"/>`;
+  s += `<circle cx="${x(endAbs)}" cy="43" r="6" fill="${col("--rest")}" stroke="${col("--ink")}" stroke-width="1.5"/>`;
+  const anchor = v => v < 40 ? "start" : v > W - 40 ? "end" : "middle";
+  s += `<text x="${x(startMin)}" y="97" text-anchor="${anchor(x(startMin))}" font-size="13" font-weight="700" fill="${col("--ink")}">▶ ${hm(startMin)}</text>`;
+  s += `<text x="${x(endAbs)}" y="97" text-anchor="${anchor(x(endAbs))}" font-size="13" font-weight="700" fill="${col("--rest")}">■ ${hm(endAbs % 1440)}</text>`;
+  svg.innerHTML = s;
+}
+
+function render() {
+  if (mode === "add") {
+    const day = +$("a-day").value, sh = clampInt($("a-h"), 0, 23), sm = clampInt($("a-m"), 0, 59);
+    const dh = clampInt($("d-h"), 0, 120), dm = clampInt($("d-m"), 0, 59);
+    const startMin = sh * 60 + sm, durMin = dh * 60 + dm, res = addTime(day, startMin, durMin);
+    $("r-lbl").textContent = t("lblAdd", { day: dayName(day), time: hm(startMin), dur: dur(durMin) });
+    $("r-big").textContent = hm(res.endMin);
+    $("r-when").textContent = `${dayName(res.endDay)} · ${relDay(res.dayOff)}`;
+    $("methods").innerHTML = stepsAdd(day, sh, sm, dh, dm, res);
+    drawStrip(day, startMin, durMin);
+  } else {
+    const fd = +$("f-day").value, td0 = +$("t-day").value;
+    const fMin = clampInt($("f-h"), 0, 23) * 60 + clampInt($("f-m"), 0, 59);
+    const tMin = clampInt($("t-h"), 0, 23) * 60 + clampInt($("t-m"), 0, 59);
+    let td = fd + ((td0 - fd + 7) % 7);
+    if (td === fd && tMin < fMin) td += 7;
+    const total = (td - fd) * 1440 + tMin - fMin;
+    $("r-lbl").textContent = t("lblDiff", { d1: dayName(fd), t1: hm(fMin), d2: dayName(td), t2: hm(tMin) });
+    $("r-big").textContent = dur(total);
+    $("r-when").textContent = t("hm", { h: Math.floor(total / 60), m: total % 60 });
+    $("methods").innerHTML = stepsDiff(fd, fMin, td, tMin, total);
+    drawStrip(fd, fMin, total);
+  }
+}
+
+function setMode(m) {
+  mode = m;
+  $("tab-add").setAttribute("aria-selected", m === "add");
+  $("tab-diff").setAttribute("aria-selected", m === "diff");
+  $("mode-add").hidden = m !== "add"; $("mode-diff").hidden = m !== "diff";
+  render();
+}
+
+$("tab-add").onclick = () => setMode("add");
+$("tab-diff").onclick = () => setMode("diff");
+$("btn-now").onclick = () => { fillNow(); render(); };
+$("presets").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  $("d-h").value = b.dataset.h; $("d-m").value = b.dataset.m; render();
+});
+document.querySelectorAll(".langs button").forEach(b => b.onclick = () => applyLang(b.dataset.lang));
+document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", render));
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", render);
+
+// Start: saved language, else phone language, else Spanish; start time = now in Spain
+let saved = null;
+try { saved = localStorage.getItem("lang"); } catch (e) {}
+const phone = (navigator.language || "es").slice(0, 2);
+for (const id of ["a-day", "f-day", "t-day"]) $(id).innerHTML = "<option value='0'></option>";
+applyLang(saved || (I18N[phone] ? phone : "es"));
+fillNow();
+const n = madridNow(); $("f-day").value = n.day; $("t-day").value = (n.day + 1) % 7;
+render();
+
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
