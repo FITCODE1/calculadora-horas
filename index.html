@@ -36,10 +36,10 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f
   display: grid; gap: 16px; }
 h1, h2 { margin: 0; line-height: 1.15; }
 h1 { font-size: 1.7rem; } h2 { font-size: 1.2rem; }
-.top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .langs { display: flex; gap: 6px; }
-.langs button { font: 700 .95rem var(--font); border: 2px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
-.langs button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.langs button { font-size: 1.35rem; line-height: 1; border: 2px solid transparent; background: transparent; border-radius: 8px; padding: 3px 5px; cursor: pointer; opacity: .55; }
+.langs button[aria-pressed="true"] { border-color: var(--accent); opacity: 1; }
 .sub { color: var(--muted); margin: 0; }
 .brand { font-size: .8rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--drive); }
 .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 5px; }
@@ -50,7 +50,13 @@ h1 { font-size: 1.7rem; } h2 { font-size: 1.2rem; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
 label { display: grid; gap: 4px; font-size: .8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 select, input { font: 700 1.5rem var(--font); color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; font-variant-numeric: tabular-nums; }
-.num { width: 3.1em; text-align: center; }
+.num { width: 3.4em; text-align: center; text-align-last: center; -webkit-appearance: none; appearance: none; }
+.dayrow { display: flex; gap: 8px; align-items: stretch; }
+.dayrow select { flex: 1; min-width: 0; }
+.dayrow .now { margin: 0; }
+#mode-add, #mode-diff { gap: 8px; }
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip.on small { color: var(--accent-ink); }
 .tblock { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "day day" "time now"; gap: 10px; align-items: end; }
 .tblock > label { grid-area: day; }
 .tblock > .field { grid-area: time; }
@@ -61,12 +67,6 @@ select, input { font: 700 1.5rem var(--font); color: var(--ink); background: var
 .hhmm { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; direction: ltr; justify-content: flex-start; }
 .hhmm .colon { padding: 0; }
 
-.step { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .95rem; color: var(--ink); margin-top: 4px; }
-.step .n { flex: none; width: 1.7em; height: 1.7em; border-radius: 50%; background: var(--drive); color: var(--card); display: grid; place-items: center; font-size: .85rem; }
-#mode-add { gap: 8px; }
-label.step { text-transform: none; letter-spacing: 0; display: flex; }
-#mode-add > select { width: 100%; }
-#mode-add > .now { justify-self: start; margin: 0; }
 .sep { border: 0; border-top: 1px dashed var(--line); margin: 2px 0; width: 100%; }
 @media (min-width: 560px) {
   .tblock { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "day time now"; }
@@ -95,11 +95,12 @@ footer { font-size: .8rem; color: var(--muted); text-align: center; }
 <body>
 <div class="wrap">
   <div class="top">
-    <div><div class="brand">Florin Fresco</div><h1 id="t-title"></h1></div>
+    <div class="brand">Florin Fresco</div>
     <div class="langs" role="group" aria-label="Idioma">
-      <button data-lang="es">ES</button><button data-lang="ro">RO</button><button data-lang="ar">ع</button>
+      <button data-lang="es" aria-label="Español">🇪🇸</button><button data-lang="ro" aria-label="Română">🇷🇴</button><button data-lang="ar" aria-label="العربية">🇲🇦</button>
     </div>
   </div>
+  <h1 id="t-title"></h1>
   <p class="sub" id="t-sub"></p>
 
   <div class="tabs" role="tablist">
@@ -108,37 +109,26 @@ footer { font-size: .8rem; color: var(--muted); text-align: center; }
   </div>
 
   <section id="mode-add" class="card">
-    <div class="step"><span class="n">1</span><span data-t="s1"></span></div>
-    <button class="now" id="btn-now" data-t="now"></button>
-    <label for="a-day" class="step"><span class="n">2</span><span data-t="s2"></span></label>
-    <select id="a-day"></select>
-    <div class="step"><span class="n">3</span><span data-t="s3"></span></div>
-    <div class="hhmm"><input id="a-h" class="num" type="text" inputmode="numeric" maxlength="2" aria-label="h"><span class="colon">:</span><input id="a-m" class="num mm" type="text" inputmode="numeric" maxlength="2" aria-label="min"></div>
-    <div class="step"><span class="n">4</span><span data-t="s4"></span></div>
+    <span class="cap" data-t="day"></span>
+    <div class="dayrow"><select id="a-day" aria-label="day"></select><button class="now" id="btn-now" data-t="now"></button></div>
+    <span class="cap" data-t="hour"></span>
+    <div class="hhmm"><select id="a-h" class="num" aria-label="h"></select><span class="colon">:</span><select id="a-m" class="num" aria-label="min"></select></div>
+    <span class="cap" data-t="s4"></span>
     <div class="chips" id="presets"></div>
-    <div class="step"><span class="n">5</span><span data-t="s5"></span></div>
-    <div class="hhmm"><input id="d-h" class="num" type="text" inputmode="numeric" maxlength="3" value="15" aria-label="h"><span class="colon">:</span><input id="d-m" class="num mm" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="min"></div>
+    <span class="cap" data-t="addH"></span>
+    <div class="hhmm"><select id="d-h" class="num" aria-label="h"></select><span class="colon">:</span><select id="d-m" class="num" aria-label="min"></select></div>
   </section>
 
   <section id="mode-diff" class="card" hidden>
-    <div class="tblock">
-      <label for="f-day"><span data-t="from"></span><select id="f-day"></select></label>
-      <div class="field"><span class="cap" data-t="hour"></span>
-        <div class="hhmm"><input id="f-h" class="num" type="text" inputmode="numeric" maxlength="2" value="21" aria-label="h"><span class="colon">:</span><input id="f-m" class="num mm" type="text" inputmode="numeric" maxlength="2" value="10" aria-label="min"></div>
-      </div>
-      <button class="now" id="btn-now-f" data-t="now"></button>
-    </div>
+    <span class="cap" data-t="from"></span>
+    <div class="dayrow"><select id="f-day" aria-label="day"></select><button class="now" id="btn-now-f" data-t="now"></button></div>
+    <div class="hhmm"><select id="f-h" class="num" aria-label="h"></select><span class="colon">:</span><select id="f-m" class="num" aria-label="min"></select></div>
     <hr class="sep">
-    <div class="tblock">
-      <label for="t-day"><span data-t="to"></span><select id="t-day"></select></label>
-      <div class="field"><span class="cap" data-t="hour"></span>
-        <div class="hhmm"><input id="t-h" class="num" type="text" inputmode="numeric" maxlength="2" value="08" aria-label="h"><span class="colon">:</span><input id="t-m" class="num mm" type="text" inputmode="numeric" maxlength="2" value="40" aria-label="min"></div>
-      </div>
-      <button class="now" id="btn-now-t" data-t="now"></button>
-    </div>
+    <span class="cap" data-t="to"></span>
+    <div class="dayrow"><select id="t-day" aria-label="day"></select><button class="now" id="btn-now-t" data-t="now"></button></div>
+    <div class="hhmm"><select id="t-h" class="num" aria-label="h"></select><span class="colon">:</span><select id="t-m" class="num" aria-label="min"></select></div>
   </section>
 
-  <div class="step" id="step6"><span class="n">6</span><span data-t="s6"></span></div>
   <div class="result" aria-live="polite">
     <span class="lbl" id="r-lbl"></span>
     <span class="big" id="r-big" dir="ltr"></span>
@@ -169,7 +159,7 @@ footer { font-size: .8rem; color: var(--muted); text-align: center; }
 const I18N = {
   es: {
     title: "Calculadora de horas",
-    sub: "Calcula a qué hora y qué día terminas, o cuánto tiempo ha pasado. Formato 24 horas, con la hora de tu teléfono.",
+    sub: "Hora de tu teléfono, formato 24 h.",
     tabAdd: "¿A qué hora termino?", tabDiff: "¿Cuánto tiempo ha pasado?",
     day: "Día", hour: "Hora", min: "Min", now: "🕒 Ahora", s1: "Pulsa para poner la hora actual", s2: "Día", s3: "Hora y minutos", s4: "Suma rápida", s5: "O escribe las horas a sumar", s6: "Resultado", addH: "Sumar horas", from: "Desde", to: "Hasta",
     days: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
@@ -201,7 +191,7 @@ const I18N = {
   },
   ro: {
     title: "Calculator ore șofer",
-    sub: "Afli la ce oră și în ce zi termini, sau cât timp a trecut. Ora pe 24 de ore, ora din telefonul tău.",
+    sub: "Ora telefonului, format 24 h.",
     tabAdd: "La ce oră termin?", tabDiff: "Cât timp a trecut?",
     day: "Ziua", hour: "Ora", min: "Min", now: "🕒 Acum", s1: "Apasă ca să pui ora de acum", s2: "Ziua", s3: "Ora și minutele", s4: "Adunare rapidă", s5: "Sau scrie orele de adunat", s6: "Rezultat", addH: "Adun ore", from: "De la", to: "Până la",
     days: ["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"],
@@ -233,7 +223,7 @@ const I18N = {
   },
   ar: {
     title: "حاسبة ساعات السائق",
-    sub: "احسب في أي ساعة وأي يوم تنتهي، أو كم من الوقت مضى. نظام 24 ساعة، حسب ساعة هاتفك.",
+    sub: "حسب ساعة هاتفك، نظام 24 ساعة.",
     tabAdd: "متى أنتهي؟", tabDiff: "كم مضى من الوقت؟",
     day: "اليوم", hour: "الساعة", min: "الدقائق", now: "🕒 الآن", s1: "اضغط لوضع الوقت الحالي", s2: "اليوم", s3: "الساعة والدقائق", s4: "إضافة سريعة", s5: "أو اكتب الساعات المراد إضافتها", s6: "النتيجة", addH: "أضف ساعات", from: "من", to: "إلى",
     days: ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"],
@@ -283,9 +273,16 @@ function deviceNow() {
   const d = new Date();
   return { day: (d.getDay() + 6) % 7, h: d.getHours(), m: d.getMinutes() };
 }
+function fillSelects() {
+  const opts = (n, padIt) => Array.from({ length: n }, (_, i) => `<option value="${i}">${padIt ? pad(i) : i}</option>`).join("");
+  for (const p of ["a", "f", "t"]) { $(p + "-h").innerHTML = opts(24, true); $(p + "-m").innerHTML = opts(60, true); }
+  $("d-h").innerHTML = opts(121, false); $("d-m").innerHTML = opts(60, true);
+  $("d-h").value = 15; $("d-m").value = 0;
+  $("f-h").value = 21; $("f-m").value = 10; $("t-h").value = 8; $("t-m").value = 40;
+}
 function fillNow() {
   const n = deviceNow();
-  $("a-day").value = n.day; $("a-h").value = pad(n.h); $("a-m").value = pad(n.m);
+  $("a-day").value = n.day; $("a-h").value = n.h; $("a-m").value = n.m;
 }
 
 function applyLang(l) {
@@ -400,7 +397,12 @@ function drawStrip(startDay, startMin, durMin) {
   svg.innerHTML = s;
 }
 
+function markChips() {
+  document.querySelectorAll("#presets .chip").forEach(c =>
+    c.classList.toggle("on", c.dataset.h === $("d-h").value && c.dataset.m === $("d-m").value));
+}
 function render() {
+  markChips();
   if (mode === "add") {
     const day = +$("a-day").value, sh = clampInt($("a-h"), 0, 23), sm = clampInt($("a-m"), 0, 59);
     const dh = clampInt($("d-h"), 0, 120), dm = clampInt($("d-m"), 0, 59);
@@ -429,22 +431,19 @@ function setMode(m) {
   mode = m;
   $("tab-add").setAttribute("aria-selected", m === "add");
   $("tab-diff").setAttribute("aria-selected", m === "diff");
-  $("mode-add").hidden = m !== "add"; $("mode-diff").hidden = m !== "diff"; $("step6").hidden = m !== "add";
+  $("mode-add").hidden = m !== "add"; $("mode-diff").hidden = m !== "diff";
   render();
 }
 
 $("tab-add").onclick = () => setMode("add");
 $("tab-diff").onclick = () => setMode("diff");
 $("btn-now").onclick = () => { fillNow(); render(); };
-const setNow = p => { const n = deviceNow(); $(p + "-day").value = n.day; $(p + "-h").value = pad(n.h); $(p + "-m").value = pad(n.m); render(); };
-document.querySelectorAll(".num").forEach(el => el.addEventListener("blur", () => {
-  const v = parseInt(el.value, 10); if (!isNaN(v)) el.value = el.id === "d-h" ? String(v) : pad(v);
-}));
+const setNow = p => { const n = deviceNow(); $(p + "-day").value = n.day; $(p + "-h").value = n.h; $(p + "-m").value = n.m; render(); };
 $("btn-now-f").onclick = () => setNow("f");
 $("btn-now-t").onclick = () => setNow("t");
 $("presets").addEventListener("click", e => {
   const b = e.target.closest(".chip"); if (!b) return;
-  $("d-h").value = b.dataset.h; $("d-m").value = pad(+b.dataset.m); render();
+  $("d-h").value = b.dataset.h; $("d-m").value = b.dataset.m; render();
 });
 document.querySelectorAll(".langs button").forEach(b => b.onclick = () => applyLang(b.dataset.lang));
 document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", render));
@@ -455,6 +454,7 @@ let saved = null;
 try { saved = localStorage.getItem("lang"); } catch (e) {}
 const phone = (navigator.language || "es").slice(0, 2);
 for (const id of ["a-day", "f-day", "t-day"]) $(id).innerHTML = "<option value='0'></option>";
+fillSelects();
 applyLang(saved || (I18N[phone] ? phone : "es"));
 fillNow();
 const n = deviceNow(); $("f-day").value = n.day; $("t-day").value = (n.day + 1) % 7;
