@@ -1,5 +1,5 @@
 // Offline cache: the page works without signal after the first visit.
-const CACHE = "calculadora-horas-v7";
+const CACHE = "calculadora-horas-v8";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {

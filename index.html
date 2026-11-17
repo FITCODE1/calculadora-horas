@@ -164,7 +164,7 @@ const I18N = {
     day: "Día", hour: "Hora", min: "Min", now: "🕒 Ahora", s1: "Pulsa para poner la hora actual", s2: "Día", s3: "Hora y minutos", s4: "Suma rápida", s5: "O escribe las horas a sumar", s6: "Resultado", addH: "Sumar horas", from: "Desde", to: "Hasta",
     days: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
     same: "el mismo día", tomorrow: "mañana", after: "pasado mañana", inDays: "dentro de {n} días",
-    presets: ["conducción", "descanso reducido", "descanso", "jornada", "jornada", "un día", "descanso semanal"],
+    presets: ["conducción", "descanso reducido", "descanso", "jornada", "jornada", "jornada 2 conductores", "un día", "descanso semanal"],
     stripTitle: "Por días", stripNote: "Las líneas gruesas son la medianoche (00:00). Cada medianoche empieza un día nuevo.",
     stepsTitle: "Cómo se calcula, paso a paso",
     m1: "Método 1 · Sumo y resto 24", addMin: "Suma los minutos: {calc}", over60: "Más de 60 minutos: {calc} y una hora más.",
@@ -196,7 +196,7 @@ const I18N = {
     day: "Ziua", hour: "Ora", min: "Min", now: "🕒 Acum", s1: "Apasă ca să pui ora de acum", s2: "Ziua", s3: "Ora și minutele", s4: "Adunare rapidă", s5: "Sau scrie orele de adunat", s6: "Rezultat", addH: "Adun ore", from: "De la", to: "Până la",
     days: ["Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"],
     same: "aceeași zi", tomorrow: "mâine", after: "poimâine", inDays: "peste {n} zile",
-    presets: ["condus", "odihnă redusă", "odihnă", "program", "program", "o zi", "odihnă săpt."],
+    presets: ["condus", "odihnă redusă", "odihnă", "program", "program", "program echipaj", "o zi", "odihnă săpt."],
     stripTitle: "Pe zile", stripNote: "Liniile groase sunt miezul nopții (00:00). La fiecare miez de noapte începe o zi nouă.",
     stepsTitle: "Cum se calculează, pas cu pas",
     m1: "Metoda 1 · Adun și scad 24", addMin: "Adună minutele: {calc}", over60: "Peste 60 de minute: {calc} și o oră în plus.",
@@ -228,7 +228,7 @@ const I18N = {
     day: "اليوم", hour: "الساعة", min: "الدقائق", now: "🕒 الآن", s1: "اضغط لوضع الوقت الحالي", s2: "اليوم", s3: "الساعة والدقائق", s4: "إضافة سريعة", s5: "أو اكتب الساعات المراد إضافتها", s6: "النتيجة", addH: "أضف ساعات", from: "من", to: "إلى",
     days: ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"],
     same: "نفس اليوم", tomorrow: "غدًا", after: "بعد غد", inDays: "بعد {n} أيام",
-    presets: ["قيادة", "راحة مخفضة", "راحة", "دوام", "دوام", "يوم", "راحة أسبوعية"],
+    presets: ["قيادة", "راحة مخفضة", "راحة", "دوام", "دوام", "دوام سائقَين", "يوم", "راحة أسبوعية"],
     stripTitle: "حسب الأيام", stripNote: "الخطوط السميكة هي منتصف الليل (00:00). عند كل منتصف ليل يبدأ يوم جديد.",
     stepsTitle: "طريقة الحساب خطوة بخطوة",
     m1: "الطريقة 1 · أجمع وأطرح 24", addMin: "اجمع الدقائق: {calc}", over60: "أكثر من 60 دقيقة: {calc} وساعة إضافية.",
@@ -254,7 +254,7 @@ const I18N = {
     footer: "Florin Fresco S.L.U. · أداة مساعدة. المرجع القانوني هو دائمًا جهاز التاكوغراف.",
   },
 };
-const PRESETS = [[4, 30], [9, 0], [11, 0], [13, 0], [15, 0], [24, 0], [45, 0]];
+const PRESETS = [[4, 30], [9, 0], [11, 0], [13, 0], [15, 0], [21, 0], [24, 0], [45, 0]];
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, "0");
 const hm = mins => `${pad(Math.floor(mins / 60) % 24)}:${pad(mins % 60)}`;
